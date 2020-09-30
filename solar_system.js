@@ -1,15 +1,108 @@
-// SCENE SETUP
-var scene = new THREE.Scene();
 
-// CAMERA SETUP
-var camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 1000);
+  class PickHelper {
+    constructor() {
+      this.raycaster = new THREE.Raycaster();
+      this.pickedObject = null;
+      this.pickedObjectSavedColor = 0;
+    }
+    pick(normalizedPosition, scene, camera, time) {
+      // restore the color if there is a picked object
+      if (this.pickedObject) {
+        this.pickedObject.material.emissive.setHex(this.pickedObjectSavedColor);
+        this.pickedObject = undefined;
+      }
 
-camera.position.set(0, 2, 15);
+      // cast a ray through the frustum
+      this.raycaster.setFromCamera(normalizedPosition, camera);
+      // get the list of objects the ray intersected
+      const intersectedObjects = this.raycaster.intersectObjects(scene.children);
+      if (intersectedObjects.length) {
+        // pick the first object. It's the closest one
+        this.pickedObject = intersectedObjects[0].object;
+        // save its color
+        this.pickedObjectSavedColor = this.pickedObject.material.emissive.getHex();
+        // set its emissive color to flashing red/yellow
+        this.pickedObject.material.emissive.setHex((time * 8) % 2 > 1 ? 0xFFFF00 : 0xFF0000);
+      }
+    }
+  }
+
 
 // RENDERER SETUP
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+const canvas = renderer.domElement;
+document.body.appendChild(canvas);
+
+
+
+
+const fov = 60;
+const aspect = window.innerWidth / window.innerHeight;  // the canvas default
+const near = 0.1;
+const far = 1000;
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+camera.position.z = 10;
+
+const scene = new THREE.Scene();
+// scene.background = new THREE.Color('white');
+
+// // put the camera on a pole (parent it to an object)
+// // so we can spin the pole to move the camera around the scene
+// const cameraPole = new THREE.Object3D();
+// scene.add(cameraPole);
+// cameraPole.add(camera);
+
+// {
+//   const color = 0xFFFFFF;
+//   const intensity = 1;
+//   const light = new THREE.DirectionalLight(color, intensity);
+//   light.position.set(-1, 2, 4);
+//   camera.add(light);
+// }
+
+// const boxWidth = 1;
+// const boxHeight = 1;
+// const boxDepth = 1;
+// const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+// function rand(min, max) {
+//   if (max === undefined) {
+//     max = min;
+//     min = 0;
+//   }
+//   return min + (max - min) * Math.random();
+// }
+
+// function randomColor() {
+//   return `hsl(${rand(360) | 0}, ${rand(50, 100) | 0}%, 50%)`;
+// }
+
+// const numObjects = 100;
+// for (let i = 0; i < numObjects; ++i) {
+//   const material = new THREE.MeshPhongMaterial({
+//     color: randomColor(),
+//   });
+
+//   const cube = new THREE.Mesh(geometry, material);
+//   scene.add(cube);
+
+//   cube.position.set(rand(-20, 20), rand(-20, 20), rand(-20, 20));
+//   cube.rotation.set(rand(Math.PI), rand(Math.PI), 0);
+//   cube.scale.set(rand(3, 6), rand(3, 6), rand(3, 6));
+// }
+
+function resizeRendererToDisplaySize(renderer) {
+  const canvas = renderer.domElement;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+  const needResize = canvas.width !== width || canvas.height !== height;
+  if (needResize) {
+    renderer.setSize(width, height, false);
+  }
+  return needResize;
+}
+
 
 
 var light = new THREE.PointLight(0xffffff, 1.5, 1000);
@@ -26,14 +119,14 @@ const sunTexture = loader.load('public/sun.jpg');
 const sunMaterial = new THREE.MeshStandardMaterial({ map: sunTexture });
 const sun = new THREE.Mesh(geometry, sunMaterial);
 sun.position.set(0, 0, -10);
-sun.scale.setScalar(8);
+sun.scale.setScalar(4);
 scene.add(sun);
 
 
 // to store objects and groups
 const objects = [];
 const groupObjects = [];
-// const gap = 3;
+
 
 function addObject(x, scale, obj, { gs, os }) {
     obj.position.x = x;
@@ -62,23 +155,23 @@ function addPlanet(x, scale, url, speed) {
 // PLANETS ROTATING AROUND THE SUN
 
 {
-    addPlanet(10, 1, 'public/mercury.jpg', { gs: 0.03, os: 0.015 });
+    addPlanet(10, 1, 'public/mercury.jpg', { gs: 0.003, os: 0.015 });
 }
 
 {
-    addPlanet(15, 1.2, 'public/venus.jpg', { gs: 0.025, os: 0.012 });
+    addPlanet(15, 1.2, 'public/venus.jpg', { gs: 0.0025, os: 0.012 });
 }
 
 {
-    addPlanet(19, 1.4, 'public/earth.jpg', { gs: 0.02, os: 0.010 });
+    addPlanet(19, 1.4, 'public/earth.jpg', { gs: 0.002, os: 0.010 });
 }
 
 {
-    addPlanet(24, 1, 'public/mars.jpg', { gs: 0.015, os: 0.012 });
+    addPlanet(24, 1, 'public/mars.jpg', { gs: 0.0015, os: 0.012 });
 }
 
 {
-    addPlanet(32, 4, 'public/jupiter.jpg', { gs: 0.005, os: 0.005 });
+    addPlanet(32, 4, 'public/jupiter.jpg', { gs: 0.0005, os: 0.005 });
 }
 
 {
@@ -99,101 +192,6 @@ function addPlanet(x, scale, url, speed) {
 
 
 
-// const domEvents = new THREEx.DomEvents(camera, renderer.domElement);
-
-// domEvents.addEventListener(sun, 'click', event => {
-//     sunMaterial.wireframe = true;
-// })
-
-
-
-// var lineGeometry = new THREE.LineGeometry();
-
-// var i, len =60, twopi = 2* Math.PI;
-// var distance = 5;
-// for(i=0; i<=120; i++)
-// {
-//     var x = distance * Math.cos( i / 120 *twopi);
-//     var z = distance * Math.sin(i / 120 *twopi);
-//     var vertex = new THREE.Vertex(new THREE.Vector3(x, 0, z));
-//     lineGeometry.vertices.push(vertex);
-// }
-
-
-// var lineMaterial = new THREE.LineBasicMaterial({
-//     color : 0xffffff,
-//     linewidth : 3
-// });
-
-// var line = new THREE.Line(lineGeometry, lineMaterial);
-// line.position.set(0, 10, 0);
-// scene.add(line);
-
-
-
-
-
-// function createStars(minDistance ){
-
-//     var starGroup = new THREE.Object3D();
-
-//     var i;
-//     var starsGeometry = new THREE.Geometry();
-
-//     for(i=0; i<667; i++)
-//     {
-//         var vector = new THREE.Vector3(
-//             (Math.random() * 2 - 1) * minDistance,
-//             (Math.random() * 2 - 1) * minDistance,
-//             (Math.random() * 2 - 1) * minDistance
-//         );
-
-//         if(vector.length() < minDistance)
-//         {
-//             vector = vector.setLength(minDistance);
-//         }
-
-//         starsGeometry.vertices.push(new THREE.Vertex(vector));
-//     }
-
-
-//     var starsMaterials = [];
-//     for(i=0; i<8; i++)
-//     {
-//         starsMaterials.push(
-//             new THREE.ParticleBasicMaterial(
-//                 {
-//                     color : 0x101010 * (i + 1),
-//                     size : i % 2 + 1,
-//                     sizeAttenuation : false
-//                 }
-//             )
-//         );
-//     }
-
-
-//       for( i =0; i<24; i++);
-//       {
-//           var stars = new THREE.ParticleSystem(starsGeometry, 
-//             starsMaterials[i % 8]);
-
-//             stars.rotation.y = i / (Math.PI * 2);
-//             starGroup.add(stars);
-//       }
-
-//       scene.add(starGroup);
-
-// }
-
-// createStars(0.1);
-
-// function createPlanet(group, mesh, x, scale){
-//      mesh.position.set(x, 0, -10);
-//      mesh.scale.setScalar(scale);
-//      group.add(mesh);
-//      scene.add(group);
-// }
-
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -202,31 +200,111 @@ function onWindowResize() {
 
 window.addEventListener('resize', onWindowResize);
 
-// var controls = new OrbitControls( camera, renderer.domElement );
 
 
-// controls.update();
+// var animate = function () {
+//     requestAnimationFrame(animate);
+
+//     // controls.update();
+
+//     sun.rotation.y += 0.01;
+
+//     objects.forEach((obj) => {
+//         obj.object.rotation.y += obj.speed;
+//     })
+
+//     groupObjects.forEach((g) => {
+//         g.group.rotation.y += g.speed;
+//     });
+
+//     // pickHelper.pick(normalizedPosition, scene, camera, time);
+
+//     renderer.render(scene, camera);
+// };
+
+// animate();
 
 
 
-var animate = function () {
-    requestAnimationFrame(animate);
 
-    // controls.update();
+function getCanvasRelativePosition(event) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (event.clientX - rect.left) * canvas.width  / rect.width,
+    y: (event.clientY - rect.top ) * canvas.height / rect.height,
+  };
+}
 
-    sun.rotation.y += 0.01;
+function setPickPosition(event) {
+  const pos = getCanvasRelativePosition(event);
+  pickPosition.x = (pos.x / canvas.width ) *  2 - 1;
+  pickPosition.y = (pos.y / canvas.height) * -2 + 1;  // note we flip Y
+}
 
-    objects.forEach((obj) => {
-        obj.object.rotation.y += obj.speed;
-    })
+function clearPickPosition() {
+  // unlike the mouse which always has a position
+  // if the user stops touching the screen we want
+  // to stop picking. For now we just pick a value
+  // unlikely to pick something
+  pickPosition.x = -100000;
+  pickPosition.y = -100000;
+}
+window.addEventListener('mousemove', setPickPosition);
+window.addEventListener('mouseout', clearPickPosition);
+window.addEventListener('mouseleave', clearPickPosition);
 
-    groupObjects.forEach((g) => {
-        g.group.rotation.y += g.speed;
-    });
+window.addEventListener('touchstart', (event) => {
+  // prevent the window from scrolling
+  event.preventDefault();
+  setPickPosition(event.touches[0]);
+}, {passive: false});
+
+window.addEventListener('touchmove', (event) => {
+  setPickPosition(event.touches[0]);
+});
+
+window.addEventListener('touchend', clearPickPosition);
 
 
 
-    renderer.render(scene, camera);
-};
 
-animate();
+
+const pickPosition = {x: 0, y: 0};
+  const pickHelper = new PickHelper();
+  clearPickPosition();
+
+function render(time) {
+  time *= 0.001;  // convert to seconds;
+
+  // if (resizeRendererToDisplaySize(renderer)) {
+  //   const canvas = renderer.domElement;
+  //   camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  //   camera.updateProjectionMatrix();
+  // }
+
+  // cameraPole.rotation.y = time * .1;
+
+
+
+  sun.rotation.y += 0.01;
+
+      objects.forEach((obj) => {
+          obj.object.rotation.y += obj.speed;
+      })
+  
+      groupObjects.forEach((g) => {
+          g.group.rotation.y += g.speed;
+      });
+
+
+
+
+
+
+  pickHelper.pick(pickPosition, scene, camera, time);
+
+  renderer.render(scene, camera);
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
