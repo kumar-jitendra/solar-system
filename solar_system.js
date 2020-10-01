@@ -104,6 +104,12 @@ function resizeRendererToDisplaySize(renderer) {
 }
 
 
+// const controls = new THREE.OrbitControls (camera, canvas);
+// controls.enableDamping = true;
+// controls.dampingFactor = 0.25;
+// controls.enableZoom = true;
+// controls.autoRotate = true;
+
 
 var light = new THREE.PointLight(0xffffff, 1.5, 1000);
 light.position.set(0, 2, 15);
@@ -163,7 +169,40 @@ function addPlanet(x, scale, url, speed) {
 }
 
 {
-    addPlanet(19, 1.4, 'public/earth.jpg', { gs: 0.002, os: 0.010 });
+
+    const earthMaterial = createMaterial('public/earth.jpg');
+    const earthMesh = new THREE.Mesh(geometry, earthMaterial);
+    earthMesh.position.x = 19;
+    earthMesh.scale.setScalar(1.4);
+    const earthGroup = new THREE.Group();
+    earthGroup.add(earthMesh);
+
+    const ob1 = { object: earthMesh, speed: 0.010 };
+    const ob2 = { group: earthGroup, speed: 0.002 };
+    objects.push(ob1);
+    groupObjects.push(ob2);
+
+
+    const moonMaterial = createMaterial('public/moon.jpg');
+    const moonMesh = new THREE.Mesh(geometry, moonMaterial);
+    moonMesh.position.x = 3;
+    moonMesh.scale.setScalar(0.6);
+    const moonGroup = new THREE.Group();
+    moonGroup.position.x = 19;
+
+    const ob3 = { object: moonMesh, speed: 0.2 };
+    const ob4 = { group: moonGroup, speed: 0.05 };
+    objects.push(ob3);
+    groupObjects.push(ob4);
+
+    moonGroup.add(moonMesh);
+    earthGroup.add(moonGroup);
+    
+    
+    scene.add(earthGroup);
+   
+
+    // addPlanet(19, 1.4, 'public/earth.jpg', { gs: 0.002, os: 0.010 });
 }
 
 {
@@ -303,8 +342,11 @@ function render(time) {
 
   pickHelper.pick(pickPosition, scene, camera, time);
 
+  
   renderer.render(scene, camera);
 
+
+  // controls.update();
   requestAnimationFrame(render);
 }
 requestAnimationFrame(render);
