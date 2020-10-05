@@ -38,7 +38,7 @@
     const far = 1000;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     // camera.lookAt(0,0,0);
-    camera.position.set(0, 0, 10);
+    camera.position.set(-30, 25, 50);
 
 
     const controls = new THREE.OrbitControls(camera);
@@ -69,26 +69,8 @@
     scene.add(new THREE.AmbientLight(0x888888));
 
     var light = new THREE.DirectionalLight(0xcccccc, 1);
-    light.position.set(5, 5, 5)
+    light.position.set(4, 5, 5)
     scene.add(light)
-    light.castShadow = true
-    light.shadowCameraNear = 0.01
-    light.shadowCameraFar = 15
-    light.shadowCameraFov = 45
-
-    light.shadowCameraLeft = -1
-    light.shadowCameraRight = 1
-    light.shadowCameraTop = 1
-    light.shadowCameraBottom = -1
-    // light.shadowCameraVisible	= true
-
-    light.shadowBias = 0.001
-    light.shadowDarkness = 0.2
-
-    light.shadowMapWidth = 1024
-    light.shadowMapHeight = 1024
-
-
 
     // to store objects and groups
     const objects = [];
@@ -160,15 +142,11 @@
     });
     const sun = new THREE.Mesh(geometry, sunMaterial);
     sun.position.set(0, 0, 0);
-    sun.scale.setScalar(2);
+    sun.scale.setScalar(3);
     scene.add(sun);
-    getRing("sunRing", 2.8, 3, 0, 0, true);
-    getRing("sunRing", 3.4, 3.6, 0, 0, true);
-    getRing("sunRing", 3.8, 4, 0, 0, true);
-    getRing("sunRing", 4.4, 4.6, 0, 0, true);
-
-
-    // getTube(0);
+    getRing("sunRing", 4.8, 5, 0, 0, true);
+    getRing("sunRing", 5.8, 6, 0, 0, true);
+    getRing("sunRing", 6.8, 7, 0, 0, true);
 
 
     function addMesh(x, scale, obj, { gs, os }) {
@@ -242,7 +220,7 @@
     }
 
 
-    var stars = createStars(200, 64);
+    var stars = createStars(200, 80);
     scene.add(stars);
 
 
