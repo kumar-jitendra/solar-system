@@ -17,18 +17,12 @@
     else {
        
         ringGroup.add(myRing);
-
-        // const ob1 = { object: myRing, speed: 0 };
-        // const ob2 = { group: ringGroup, speed: satelliteSpeed };
-        // objects.push(ob1);
-        // groupObjects.push(ob2);
-
         root.add(ringGroup);
     }
 
     this.objUpdate = function () {
         
-        if(!isCentral)
+        // if(!isCentral)
         ringGroup.rotation.y += satelliteSpeed;
     }
     

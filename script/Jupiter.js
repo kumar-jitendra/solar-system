@@ -1,10 +1,11 @@
 function createJupiter(root) {
+    const geometry = new THREE.SphereGeometry(1, 32, 32);
 
-    const texture = THREE.ImageUtils.loadTexture('../public/jupitermap.jpg');
+    const texture =  THREE.ImageUtils.loadTexture('../public/jupitermap.jpg');
     const jupiterMaterial = new THREE.MeshStandardMaterial(
         {
             map: texture,
-            bumpMap: bumpurl == undefined ? texture : THREE.ImageUtils.loadTexture('../public/jupiterbump.jpg'),
+            bumpMap:  THREE.ImageUtils.loadTexture('../public/jupitermap.jpg'),
             bumpScale: 0.005,
         });
 
@@ -12,11 +13,11 @@ function createJupiter(root) {
     jupiterMesh.position.x = 44;
     jupiterMesh.scale.setScalar(1);
     const jupiterGroup = new THREE.Group();
-    jupiterGroup.add(jupiterGroup);
+    jupiterGroup.add(jupiterMesh);
     root.add(jupiterGroup);
 
-    const sat1 = new createSatellite(jupiterGroup, 44, 3, 0.5, 'public/moonmap.jpg', 'public/moonbump.jpg', 0.002, 0.03);
-    const sat2 = new createSatellite(jupiterGroup, 44, 5, 0.7, 'public/moonmap.jpg', 'public/moonbump.jpg', 0.003, 0.05);
+    const sat1 = new createSatellite(jupiterGroup, 44, 3, 0.5, '../public/moonmap.jpg', '../public/moonbump.jpg', 0.002, 0.03);
+    const sat2 = new createSatellite(jupiterGroup, 44, 5, 0.7, '../public/moonmap.jpg', '../public/moonbump.jpg', 0.003, 0.05);
 
 
     const jupiterOrbit = new createOrbit(root, 43.8, 44, 0, 0, true);
@@ -25,12 +26,13 @@ function createJupiter(root) {
 
     this.objUpdate = function () {
 
-        jupiterGroup.rotation.y += 0.002;
-        jupiterMesh.rotation.y += 0.02;
+        jupiterGroup.rotation.y += 0.003;
+        jupiterMesh.rotation.y += 0.005;
+
         sat1.objUpdate();
         sat2.objUpdate();
 
-        jupiterOrbit.rotation.objUpdate();
+        jupiterOrbit.objUpdate();
         jupiterSatelliteOrbit1.objUpdate();
         jupiterSatelliteOrbit2.objUpdate();
     }

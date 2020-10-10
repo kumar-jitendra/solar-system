@@ -3,7 +3,7 @@ const canvas = document.getElementById("mycanvas");
 const myscene = new Scene(canvas);
 myscene.init();
 
-window.addEventListener('resize', myscene.onWindowResize);
+// window.addEventListener('resize', myscene.onWindowResize);
 
 render();
 

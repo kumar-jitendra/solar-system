@@ -1,6 +1,6 @@
 
  function createSatellite(parent, parentPosition, posFromParent, scale, mapurl, bumpurl, rotSpeed, revSpeed) {
-
+    const geometry = new THREE.SphereGeometry(1, 32, 16);
     const texture = THREE.ImageUtils.loadTexture(mapurl);
     const satelliteMaterial = new THREE.MeshStandardMaterial(
         {

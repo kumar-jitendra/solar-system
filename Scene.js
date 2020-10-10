@@ -1,20 +1,25 @@
 class Scene {
 
     constructor(canvas) {
+
         this.canvas = canvas;
         this.root = null;
         this.scene = null;
         this.renderer = null;
         this.camera = null;
         this.objects = [];
+        this.controls = null;
+        this.pickHelper = null;
+
     }
+
     init() {
 
         const scene = new THREE.Scene();
         const root = new THREE.Object3D();
 
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-        renderer.setSize(width, height);
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
         const fov = 45;
         const aspect = window.innerWidth / window.innerHeight;  // the canvas default
@@ -22,21 +27,31 @@ class Scene {
         const far = 1000;
         const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         camera.position.set(-30, 25, 50);
-        
+
+
+        const controls = new THREE.OrbitControls(camera);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+        controls.enableZoom = true;
+
 
         this.scene = scene;
         this.root = root;
         this.camera = camera;
         this.renderer = renderer;
         this.objects = this.createObjects();
+        this.controls = controls;
+
+        this.pickHelper = new PickHelper();
+        window.addEventListener('touchend', this.pickHelper.clearPickPosition);
 
         this.scene.add(this.root);
 
     }
 
     createObjects() {
-        objects = [
-           
+        const objects = [
+
             new SolarSystem(this.scene),
             new createSun(this.root),
             new createEarth(this.root),
@@ -45,26 +60,47 @@ class Scene {
         ];
 
         PLANET_PROP.forEach(prop => {
-            const planet = new Planet(root, prop);
-            this.objects.push(planet);
-           
-            const planetOrbit = new createOrbit(root, prop.distance-0.2, prop.distance, 0, 0, true);
-            this.objects.push(planetOrbit);
+            const planet = new Planet(this.root, prop);
+            objects.push(planet);
+
 
         })
 
         return objects;
     }
 
+    resizeRendererToDisplaySize() {
+        const canvas = this.renderer.domElement;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            this.renderer.setSize(width, height, false);
+        }
+        return needResize;
+    }
+
     update() {
-        for (let i = 0; i < objects.length; i++) {
-            if (objects[i].objUpdate)
-                objects[i].objUpdate();
+        for (let i = 0; i < this.objects.length; i++) {
+            if (this.objects[i].objUpdate)
+                this.objects[i].objUpdate();
         }
 
-        renderer.render(scene, camera);
-        
+
+     if (this.resizeRendererToDisplaySize()) {
+        const canvas = this.renderer.domElement;
+       this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
+       this.camera.updateProjectionMatrix();
+     }
+
+        this.pickHelper.pick(this.scene, this.camera);
+
+        this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+
     }
+
+   
 
     onWindowResize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
