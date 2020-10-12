@@ -5,7 +5,8 @@ class PickHelper {
     this.pickedObjectSavedColor = 0;
     this.pickPosition = null;
   }
-  pick(scene, camera) {
+  pick(root, camera) {
+    
     // console.log(this.pickPosition, normalizedPosition)
     // restore the color if there is a picked object
     if (this.pickedObject) {
@@ -18,7 +19,7 @@ class PickHelper {
     if (this.pickPosition) {
       this.raycaster.setFromCamera(this.pickPosition, camera);
 
-      const intersectedObjects = this.raycaster.intersectObjects(scene.children);
+      const intersectedObjects = this.raycaster.intersectObjects(root.children);
        console.log(scene.children);
 
       if (intersectedObjects.length) {

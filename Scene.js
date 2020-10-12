@@ -21,13 +21,8 @@ class Scene {
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        const fov = 45;
-        const aspect = window.innerWidth / window.innerHeight;  // the canvas default
-        const near = 0.1;
-        const far = 1000;
-        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        camera.position.set(-30, 25, 50);
-
+        const camera = new THREE.PerspectiveCamera(FOV, ASPECT_RATIO, NEAR, FAR);
+        camera.position.set(CAMERA_POSITION[0], CAMERA_POSITION[1], CAMERA_POSITION[2]);
 
         const controls = new THREE.OrbitControls(camera);
         controls.enableDamping = true;
@@ -43,7 +38,6 @@ class Scene {
         this.controls = controls;
 
         this.pickHelper = new PickHelper();
-        window.addEventListener('touchend', this.pickHelper.clearPickPosition);
 
         this.scene.add(this.root);
 
@@ -93,14 +87,13 @@ class Scene {
        this.camera.updateProjectionMatrix();
      }
 
+
         this.pickHelper.pick(this.scene, this.camera);
 
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
 
     }
-
-   
 
     onWindowResize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
